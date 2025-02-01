@@ -1,44 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Book = () => {
   const [date, setDate] = useState(new Date());
-  const [appointments, setAppointments] = useState({});
+
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [availableSlots, setAvilableSlots] = useState([]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const generateSlots = () => {
-    const slots = [];
-    for (let hour = 10; hour < 17; hour++) {
-      if (hour === 13) continue; // Skip 1 PM
-      const period = hour >= 12 ? "PM" : "AM";
-      const displayHour = hour > 12 ? hour - 12 : hour;
-      slots.push(`${displayHour}:00 ${period}`);
-      slots.push(`${displayHour}:30 ${period}`);
-    }
-    return slots;
-  };
-
-  console.log(generateSlots());
-
-  const availableSlots = generateSlots().filter(
-    (slot) => !(appointments[date] && appointments[date].includes(slot))
-  );
-  const handleBookAppointment = () => {
+  // const availableSlots = generateSlots();
+  const handleBookAppointment = async () => {
     if (!name || !phone || !selectedSlot) {
       setError("Date, slote ,name and phone number is mandatory");
       return;
     }
-    setError("");
-    setAppointments((prev) => ({
-      ...prev,
-      [date]: [...(prev[date] || []), selectedSlot],
-    }));
-    setName("");
-    setPhone("");
-    setSelectedSlot(null);
+    const obj = { name, phone, slot: selectedSlot, date };
+    try {
+      await axios.post("http://localhost:5000/book", obj);
+      setError("");
+      setName("");
+      setPhone("");
+      setSelectedSlot(null);
+      setSuccessMessage("successfully submitted");
+    } catch (error) {
+      setError("Slot already booked or an error occurred");
+    }
   };
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/slots?date=${date}`
+        );
+        console.log(response);
+        setAvilableSlots(response.data.slots);
+      } catch (error) {
+        console.error("Error fetching slots", error);
+      }
+    };
+    fetchAppointments();
+  }, [date, selectedSlot]);
 
   return (
     <div className="w-full h-screen bg-green-100 flex justify-center py-10">
@@ -115,6 +119,9 @@ const Book = () => {
             </button>
           </div>
           {error && <div className="text-red-600">{error}</div>}
+          {successMessage && (
+            <div className="text-lime-500-600">{successMessage}</div>
+          )}
         </div>
       </div>
     </div>
