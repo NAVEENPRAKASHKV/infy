@@ -1,7 +1,14 @@
 import "./App.css";
+import Book from "./Components/Book";
+import Header from "./Components/Header";
 
 function App() {
-  return <h1 className="text-1xl font-bold underline ">Hello world!</h1>;
+  return (
+    <div className="w-full h-full">
+      <Header />
+      <Book />
+    </div>
+  );
 }
 
 export default App;
