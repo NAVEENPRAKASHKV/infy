@@ -15,6 +15,7 @@ const Book = () => {
   const handleBookAppointment = async () => {
     if (!name || !phone || !selectedSlot) {
       setError("Date, slote ,name and phone number is mandatory");
+      setSuccessMessage("");
       return;
     }
     const obj = { name, phone, slot: selectedSlot, date };
